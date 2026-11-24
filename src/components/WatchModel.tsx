@@ -1,3 +1,5 @@
+import { SpeedGlow } from './SpeedGlow'
+import { SpeedDisplay } from './SpeedDisplay'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import { useAnimations } from '@react-three/drei'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -949,7 +951,7 @@ function LocalTimeDisplay({ root }: { root: Object3D }) {
   return null
 }
 
-export function WatchModel({ scene, reducedQuality, resetToken, playingRef }: { scene: SceneDefinition; reducedQuality: boolean; resetToken: number; playingRef: RefObject<boolean> }) {
+export function WatchModel({ scene, reducedQuality, resetToken, playingRef, orbitBounds }: { orbitBounds?: RefObject<Box3>; scene: SceneDefinition; reducedQuality: boolean; resetToken: number; playingRef: RefObject<boolean> }) {
   const neutralPreview = useMemo(() => new URLSearchParams(window.location.search).has('neutral'), [])
   const modelUrl = modelUrlForScene(scene.id)
   const hasAuthoredModel = modelUrl !== MODEL_URL
@@ -992,6 +994,10 @@ export function WatchModel({ scene, reducedQuality, resetToken, playingRef }: { 
       model.updateMatrixWorld(true)
       return
     }
+    if (orbitBounds) {
+      model.position.set(0, 0, 0)
+      model.scale.setScalar(1)
+    }
     model.updateMatrixWorld(true)
     let caseObject: Object3D | null = null
     model.traverse((object) => {
@@ -1004,7 +1010,8 @@ export function WatchModel({ scene, reducedQuality, resetToken, playingRef }: { 
     model.position.copy(center).multiplyScalar(-scale)
     model.scale.setScalar(scale)
     model.updateMatrixWorld(true)
-  }, [hasAuthoredModel, model])
+    if (orbitBounds) orbitBounds.current.setFromObject(model, true)
+  }, [hasAuthoredModel, model, orbitBounds])
 
   useEffect(() => () => {
     meshes.forEach((mesh) => {
@@ -1123,6 +1130,8 @@ export function WatchModel({ scene, reducedQuality, resetToken, playingRef }: { 
   return (
     <group ref={container}>
       <primitive object={model} />
+      {scene.id === 'acceleration' && <SpeedGlow meshes={meshes} elapsed={animationTime} />}
+      {scene.id === 'acceleration' && <SpeedDisplay meshes={meshes} elapsed={animationTime} />}
       {scene.id === 'layering' && <LocalTimeDisplay root={model} />}
       {scene.id === 'squash' && <SquashMaterialRepair meshes={meshes} />}
       {!neutralPreview && scene.id === 'aging' && <RustFixedAnimation meshes={meshes} resetToken={resetToken} playingRef={playingRef} />}

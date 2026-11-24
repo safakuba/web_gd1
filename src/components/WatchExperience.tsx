@@ -13,7 +13,7 @@ import { MODEL_URL, PRESENCE_MODEL_URL, modelUrlForScene, useWatchAsset, WatchMo
 const DEFAULT_CAMERA_DISTANCE_SCALE = 0.82
 const MIN_ZOOM_DISTANCE_SCALE = 0.22
 
-function CameraRig({ scene, resetRef, transitioning, mobile }: { scene: SceneDefinition; resetRef: RefObject<number>; transitioning: boolean; mobile: boolean }) {
+function CameraRig({ scene, resetRef, transitioning, mobile, orbitBounds }: { orbitBounds?: RefObject<Box3>; scene: SceneDefinition; resetRef: RefObject<number>; transitioning: boolean; mobile: boolean }) {
   const { camera, size } = useThree()
   const modelUrl = modelUrlForScene(scene.id)
   const cameraModelUrl = scene.id === 'stillness' ? modelUrlForScene('layering')
@@ -22,6 +22,7 @@ function CameraRig({ scene, resetRef, transitioning, mobile }: { scene: SceneDef
   const controls = useRef<OrbitControlsImpl>(null)
   const targetPosition = useRef(new Vector3(...scene.camera.position))
   const targetLook = useRef(new Vector3(...scene.camera.target))
+  const orbitDistance = useRef(0)
   const resetProgress = useRef(1)
   const lastResetToken = useRef(resetRef.current)
 
@@ -67,9 +68,20 @@ function CameraRig({ scene, resetRef, transitioning, mobile }: { scene: SceneDef
   useEffect(() => {
     const fallbackPosition = new Vector3(...scene.camera.position)
     if (mobile) fallbackPosition.multiplyScalar(size.width > size.height ? 1.08 : 1.28)
-    const target = authoredCamera?.target ?? new Vector3(...scene.camera.target)
+    const target = authoredCamera?.target.clone() ?? new Vector3(...scene.camera.target)
     if (!authoredCamera) fallbackPosition.sub(target).multiplyScalar(DEFAULT_CAMERA_DISTANCE_SCALE).add(target)
-    const position = authoredCamera?.position ?? fallbackPosition
+    const position = authoredCamera?.position.clone() ?? fallbackPosition
+    const bounds = orbitBounds?.current
+    if (bounds && !bounds.isEmpty()) {
+      const offset = position.clone().sub(target)
+      bounds.getCenter(target)
+      const vertical = (authoredCamera?.fov ?? scene.camera.fov) * Math.PI / 360
+      const horizontal = Math.atan(Math.tan(vertical) * size.width / size.height)
+      const radius = bounds.getSize(new Vector3()).length() / 2
+      orbitDistance.current = Math.max(offset.length(), 1.05 * radius / Math.sin(Math.min(vertical, horizontal)))
+      position.copy(target).addScaledVector(offset.normalize(), orbitDistance.current)
+      if (controls.current) controls.current.maxDistance = Math.max(controls.current.maxDistance, orbitDistance.current * 1.5)
+    }
     targetPosition.current.copy(position)
     targetLook.current.copy(target)
     camera.position.copy(position)
@@ -85,7 +97,7 @@ function CameraRig({ scene, resetRef, transitioning, mobile }: { scene: SceneDef
     controls.current?.target.copy(target)
     controls.current?.update()
     resetProgress.current = 1
-  }, [authoredCamera, camera, mobile, scene, size.height, size.width])
+  }, [authoredCamera, camera, mobile, scene, size.height, size.width, orbitBounds])
 
   useFrame((_, delta) => {
     if (lastResetToken.current !== resetRef.current) {
@@ -105,7 +117,7 @@ function CameraRig({ scene, resetRef, transitioning, mobile }: { scene: SceneDef
     <OrbitControls
       ref={controls}
       makeDefault
-      target={authoredCamera?.target.toArray() ?? scene.camera.target}
+      target={orbitBounds ? undefined : authoredCamera?.target.toArray() ?? scene.camera.target}
       enablePan={false}
       enableDamping
       dampingFactor={0.06}
@@ -216,6 +228,8 @@ function TransmissionBudget({ mobile }: { mobile: boolean }) {
 export const WatchExperience = memo(function WatchExperience({ scene, transitionToken, cameraResetRef, transitioning, playingRef }: { scene: SceneDefinition; transitionToken: number; cameraResetRef: RefObject<number>; transitioning: boolean; playingRef: RefObject<boolean> }) {
   const isMobile = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const restBounds = useRef(new Box3())
+  const orbitBounds = scene.id === 'fragmentation' || scene.id === 'relativity' ? restBounds : undefined
   const host = useRef<HTMLDivElement>(null)
   const [inViewport, setInViewport] = useState(true)
   const [pageVisible, setPageVisible] = useState(document.visibilityState === 'visible')
@@ -260,11 +274,11 @@ export const WatchExperience = memo(function WatchExperience({ scene, transition
         <FreezeExposure />
         <directionalLight color="#cde6ff" intensity={0.65} position={[-3, 3, -4]} />
       </>}
-      {scene.id === 'stillness' ? <FreezeModel playingRef={runtimePlayingRef} /> : <WatchModel scene={scene} reducedQuality={isMobile} resetToken={transitionToken} playingRef={runtimePlayingRef} />}
-      <CameraRig key={scene.id} scene={scene} resetRef={cameraResetRef} transitioning={transitioning} mobile={isMobile} />
+      {scene.id === 'stillness' ? <FreezeModel playingRef={runtimePlayingRef} /> : <WatchModel orbitBounds={orbitBounds} scene={scene} reducedQuality={isMobile} resetToken={transitionToken} playingRef={runtimePlayingRef} />}
+      <CameraRig orbitBounds={orbitBounds} key={scene.id} scene={scene} resetRef={cameraResetRef} transitioning={transitioning} mobile={isMobile} />
       {scene.id !== 'stillness' && (
         <EffectComposer multisampling={0}>
-          <Bloom intensity={scene.id === 'aging' || scene.id === 'layering' ? 0.04 : isMobile ? 0.18 : 0.36} luminanceThreshold={scene.id === 'layering' ? 1.2 : 0.88} luminanceSmoothing={0.16} mipmapBlur />
+          {scene.id === 'acceleration' ? <Bloom intensity={0.85} luminanceThreshold={1.15} luminanceSmoothing={0.25} radius={0.38} mipmapBlur /> : <Bloom intensity={scene.id === 'aging' || scene.id === 'layering' ? 0.04 : isMobile ? 0.18 : 0.36} luminanceThreshold={scene.id === 'layering' ? 1.2 : 0.88} luminanceSmoothing={0.16} mipmapBlur />}
           <Noise opacity={0.018} />
         </EffectComposer>
       )}

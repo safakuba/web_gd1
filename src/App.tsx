@@ -11,11 +11,11 @@ import { formatCzechText } from './lib/formatCzechText'
 
 type TransitionPhase = 'running' | 'out' | 'in'
 
-function Brand() {
+function Brand({ compact = false }: { compact?: boolean } = {}) {
   const dialog = useRef<HTMLDialogElement>(null)
   return <div className="brand">
-    <span>12 FÁZÍ ČASU</span><small>INTERAKTIVNÍ STUDIE</small>
-    <button className="annotation-toggle" onClick={() => dialog.current?.showModal()}>ANOTACE</button>
+    <span>12 FÁZÍ ČASU</span>{!compact && <small>INTERAKTIVNÍ STUDIE</small>}
+    <button className="annotation-toggle" aria-label="Anotace projektu" onClick={() => dialog.current?.showModal()}>{compact ? 'ⓘ' : 'ANOTACE'}</button>
     <dialog className="annotation-dialog" ref={dialog} aria-labelledby="annotation-heading"
       onClick={event => { if (event.target === event.currentTarget) dialog.current?.close() }}
       onKeyDown={event => event.stopPropagation()}>
@@ -64,8 +64,6 @@ export default function App() {
   const scene = scenes[sceneIndex]
   const debug = useMemo(() => new URLSearchParams(window.location.search).has('debug'), [])
   const [mobileLayout, setMobileLayout] = useState(() => forceMobile || window.matchMedia('(max-width: 800px), (pointer: coarse)').matches)
-  const [panelHidden, setPanelHidden] = useState(false)
-  const swipeStart = useRef<{ x: number; y: number; canCollapse: boolean } | null>(null)
   const prefetchedAssets = useRef(new Set<string>())
   const transitionTimer = useRef<number | undefined>(undefined)
 
@@ -130,27 +128,6 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [sceneIndex, selectScene])
 
-  const beginSwipe = (event: React.TouchEvent<HTMLElement>) => {
-    const touch = event.touches[0]
-    const copy = (event.target as HTMLElement).closest('.mobile-copy')
-    swipeStart.current = event.touches.length === 1
-      ? { x: touch.clientX, y: touch.clientY, canCollapse: !copy || copy.scrollTop <= 0 }
-      : null
-  }
-  const finishSwipe = (event: React.TouchEvent<HTMLElement>) => {
-    const start = swipeStart.current
-    swipeStart.current = null
-    if (!start) return
-    const touch = event.changedTouches[0]
-    const dx = touch.clientX - start.x
-    const dy = touch.clientY - start.y
-    if (Math.abs(dy) >= 30 && Math.abs(dy) > Math.abs(dx) * 1.2) {
-      if (dy < 0 || start.canCollapse) setPanelHidden(dy > 0)
-    } else if (!panelHidden && Math.abs(dx) >= 48 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-      selectScene(sceneIndex + (dx < 0 ? 1 : -1))
-    }
-  }
-
   const resetCamera = () => { cameraResetRef.current += 1 }
   const togglePlayback = () => setPlaying((value) => {
     playingRef.current = !value
@@ -159,10 +136,10 @@ export default function App() {
 
   if (mobileLayout) {
     return (
-      <main className="mobile-shell" data-panel-hidden={panelHidden} style={{ '--accent': scene.accent } as React.CSSProperties}>
+      <main className="mobile-shell" style={{ '--accent': scene.accent } as React.CSSProperties}>
         <div className="grain" aria-hidden="true" />
         <header className="mobile-header">
-          <Brand />
+          <Brand compact />
           <div className="mobile-controls">
             <button className="camera-reset" onClick={resetCamera} aria-label="Vrátit kameru do výchozí polohy" title="Výchozí pohled">↺</button>
             <button className="playback-toggle" onClick={togglePlayback} aria-label={playing ? 'Pozastavit animaci' : 'Přehrát animaci'} title={playing ? 'Pozastavit animaci' : 'Přehrát animaci'}>{playing ? 'Ⅱ' : '▶'}</button>
@@ -174,28 +151,16 @@ export default function App() {
             <WatchExperience scene={scene} transitionToken={transitionToken} cameraResetRef={cameraResetRef} transitioning={phase !== 'running'} playingRef={playingRef} />
           </Suspense>
           <div className={`light-transition phase-${phase}`} aria-hidden="true" />
-          <span className="mobile-orbit-hint">otáčej jedním prstem · přibližuj dvěma</span>
         </section>
 
-        <section
-          className="mobile-panel"
-          onTouchStart={beginSwipe}
-          onTouchEnd={finishSwipe}
-          onTouchCancel={() => { swipeStart.current = null }}
-        >
-          <button type="button" className="mobile-panel-handle" aria-expanded={!panelHidden}
-            aria-label={panelHidden ? 'Vysunout lištu animací' : 'Schovat lištu animací'}
-            onClick={() => setPanelHidden(hidden => !hidden)} />
-          <div className="mobile-copy"><GalleryCopy scene={scene} /></div>
-
+        <section className="mobile-panel">
+          <h1>{formatCzechText(scene.title)}</h1>
           <nav className="mobile-nav" aria-label="Animace času">
             <ol>
               {scenes.map((item, index) => (
                 <li key={item.id}>
                   <button
                     className={index === sceneIndex ? 'is-active' : ''}
-                    onPointerEnter={() => prefetchScene(index)}
-                    onFocus={() => prefetchScene(index)}
                     onClick={() => selectScene(index)}
                     aria-current={index === sceneIndex ? 'step' : undefined}
                     aria-label={`${item.index}. ${item.title}`}

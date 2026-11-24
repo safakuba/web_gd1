@@ -26,7 +26,7 @@ export const scenes: SceneDefinition[] = [
     effect: 'squash', camera, orbit, accent: '#ff6b2c',
   },
   {
-    ...phasesContent['03'], id: 'acceleration', index: '03', duration: 7.875,
+    ...phasesContent['03'], id: 'acceleration', index: '03', duration: 6,
     effect: 'acceleration', camera, orbit, accent: '#ffd84c',
   },
   {
