@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env*
+.DS_Store
+.npm-cache/
+.offline/
+backups/
+blender/
+work/
+*.blend
+*.blend1

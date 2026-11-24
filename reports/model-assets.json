@@ -1,0 +1,128 @@
+{
+  "generatedAt": "2026-11-24T16:31:12.436Z",
+  "webBudgetMiB": 15,
+  "totalBytes": 57168492,
+  "models": [
+    {
+      "file": "watch_squash.glb",
+      "bytes": 18436984,
+      "mebibytes": 17.58,
+      "exceedsWebBudget": true,
+      "meshes": 1,
+      "images": 1,
+      "animations": 1,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_inflate.fullframe.optimized.glb",
+      "bytes": 12079912,
+      "mebibytes": 11.52,
+      "exceedsWebBudget": false,
+      "meshes": 2,
+      "images": 5,
+      "animations": 1,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_future.glb",
+      "bytes": 9719704,
+      "mebibytes": 9.27,
+      "exceedsWebBudget": false,
+      "meshes": 3,
+      "images": 5,
+      "animations": 3,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_base.glb",
+      "bytes": 7255164,
+      "mebibytes": 6.92,
+      "exceedsWebBudget": false,
+      "meshes": 62,
+      "images": 5,
+      "animations": 0,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_speed.optimized.glb",
+      "bytes": 6024668,
+      "mebibytes": 5.75,
+      "exceedsWebBudget": false,
+      "meshes": 1,
+      "images": 5,
+      "animations": 1,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_freeze.glb",
+      "bytes": 715372,
+      "mebibytes": 0.68,
+      "exceedsWebBudget": false,
+      "meshes": 2,
+      "images": 4,
+      "animations": 1,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_worldtime.glb",
+      "bytes": 704464,
+      "mebibytes": 0.67,
+      "exceedsWebBudget": false,
+      "meshes": 61,
+      "images": 5,
+      "animations": 0,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_rust_fixed.glb",
+      "bytes": 575208,
+      "mebibytes": 0.55,
+      "exceedsWebBudget": false,
+      "meshes": 5,
+      "images": 6,
+      "animations": 0,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_echo_master.animated.glb",
+      "bytes": 555468,
+      "mebibytes": 0.53,
+      "exceedsWebBudget": false,
+      "meshes": 1,
+      "images": 5,
+      "animations": 1,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_cycle.glb",
+      "bytes": 553780,
+      "mebibytes": 0.53,
+      "exceedsWebBudget": false,
+      "meshes": 1,
+      "images": 5,
+      "animations": 1,
+      "meshopt": false,
+      "ktx2": false
+    },
+    {
+      "file": "watch_presence.glb",
+      "bytes": 547768,
+      "mebibytes": 0.52,
+      "exceedsWebBudget": false,
+      "meshes": 1,
+      "images": 5,
+      "animations": 0,
+      "meshopt": false,
+      "ktx2": false
+    }
+  ]
+}
