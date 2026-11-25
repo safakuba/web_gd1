@@ -11,16 +11,23 @@ import { formatCzechText } from './lib/formatCzechText'
 
 type TransitionPhase = 'running' | 'out' | 'in'
 
+function ResetIcon() {
+  return <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 9a8 8 0 1 1-.5 5M5 4v5h5" />
+  </svg>
+}
+
 function Brand({ compact = false }: { compact?: boolean } = {}) {
   const dialog = useRef<HTMLDialogElement>(null)
   return <div className="brand">
     <span>12 FÁZÍ ČASU</span>{!compact && <small>INTERAKTIVNÍ STUDIE</small>}
-    <button className="annotation-toggle" aria-label="Anotace projektu" onClick={() => dialog.current?.showModal()}>{compact ? 'ⓘ' : 'ANOTACE'}</button>
+    <button onPointerDown={event => event.stopPropagation()} className="annotation-toggle" aria-label="Anotace projektu" onClick={() => dialog.current?.showModal()}>{compact ? 'ⓘ' : 'ANOTACE'}</button>
     <dialog className="annotation-dialog" ref={dialog} aria-labelledby="annotation-heading"
       onClick={event => { if (event.target === event.currentTarget) dialog.current?.close() }}
       onKeyDown={event => event.stopPropagation()}>
       <article>
-        <button aria-label="Zavřít anotaci" onClick={() => dialog.current?.close()}>×</button>
+        <button onPointerDown={event => event.stopPropagation()} aria-label="Zavřít anotaci" onClick={() => dialog.current?.close()}>×</button>
         <h2 id="annotation-heading">{PROJECT_ANNOTATION.title}</h2>
         {PROJECT_ANNOTATION.paragraphs.map(paragraph => (
           <p key={paragraph}>{formatCzechText(paragraph)}</p>
@@ -34,7 +41,6 @@ function GalleryCopy({ scene }: { scene: (typeof scenes)[number] }) {
   return <div className="gallery-band" data-phase={scene.index} style={typographyVars}>
     <h1>{formatCzechText(scene.title)}</h1>
     <p className="gallery-lead">{formatCzechText(scene.description)}</p>
-    <p className="gallery-caption">{formatCzechText(scene.animationNote)}</p>
   </div>
 }
 
@@ -128,6 +134,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [sceneIndex, selectScene])
 
+  const [sheetOpen, setSheetOpen] = useState(true)
+  const swipe = useRef<{ x: number; y: number; canCollapse: boolean } | null>(null)
+  const suppressTap = useRef(false)
+  const sheetCopy = useRef<HTMLDivElement>(null)
+  useEffect(() => { sheetCopy.current?.scrollTo(0, 0) }, [scene.id])
   const resetCamera = () => { cameraResetRef.current += 1 }
   const togglePlayback = () => setPlaying((value) => {
     playingRef.current = !value
@@ -141,8 +152,8 @@ export default function App() {
         <header className="mobile-header">
           <Brand compact />
           <div className="mobile-controls">
-            <button className="camera-reset" onClick={resetCamera} aria-label="Vrátit kameru do výchozí polohy" title="Výchozí pohled">↺</button>
-            <button className="playback-toggle" onClick={togglePlayback} aria-label={playing ? 'Pozastavit animaci' : 'Přehrát animaci'} title={playing ? 'Pozastavit animaci' : 'Přehrát animaci'}>{playing ? 'Ⅱ' : '▶'}</button>
+            <button onPointerDown={event => event.stopPropagation()} className="camera-reset" onClick={resetCamera} aria-label="Vrátit kameru do výchozí polohy" title="Výchozí pohled"><ResetIcon /></button>
+            <button onPointerDown={event => event.stopPropagation()} className="playback-toggle" onClick={togglePlayback} aria-label={playing ? 'Pozastavit animaci' : 'Přehrát animaci'} title={playing ? 'Pozastavit animaci' : 'Přehrát animaci'}>{playing ? 'Ⅱ' : '▶'}</button>
           </div>
         </header>
 
@@ -153,13 +164,54 @@ export default function App() {
           <div className={`light-transition phase-${phase}`} aria-hidden="true" />
         </section>
 
-        <section className="mobile-panel">
-          <h1>{formatCzechText(scene.title)}</h1>
+        <section className="mobile-panel" data-expanded={sheetOpen}
+          onTouchStart={event => {
+            event.stopPropagation()
+            suppressTap.current = false
+            const touch = event.touches[0]
+            const copy = sheetCopy.current
+            swipe.current = event.touches.length === 1 ? {
+              x: touch.clientX, y: touch.clientY,
+              canCollapse: !copy?.contains(event.target as Node) || copy.scrollTop <= 1,
+            } : null
+          }}
+          onTouchMove={event => event.stopPropagation()}
+          onTouchCancel={event => { event.stopPropagation(); swipe.current = null }}
+          onTouchEnd={event => {
+            event.stopPropagation()
+            const start = swipe.current
+            swipe.current = null
+            if (!start) return
+            const touch = event.changedTouches[0]
+            const dy = touch.clientY - start.y
+            if (Math.abs(dy) < 32 || Math.abs(dy) < Math.abs(touch.clientX - start.x) * 1.2) return
+            suppressTap.current = true
+            if (dy < 0 || start.canCollapse) setSheetOpen(dy < 0)
+          }}
+          onClickCapture={event => {
+            if (!suppressTap.current || event.detail === 0) return
+            suppressTap.current = false
+            event.preventDefault()
+            event.stopPropagation()
+          }}>
+          <h1><button className="sheet-toggle" onPointerDown={event => event.stopPropagation()}
+            aria-expanded={sheetOpen} aria-controls="mobile-scene-copy"
+            aria-label={`${sheetOpen ? 'Sbalit' : 'Rozbalit'} popis: ${scene.title}`}
+            onClick={() => setSheetOpen(open => !open)}>
+            {formatCzechText(scene.title)}
+          </button></h1>
+          <div className="sheet-reveal" id="mobile-scene-copy" aria-hidden={!sheetOpen}>
+            <div className="sheet-scroll" ref={sheetCopy} inert={!sheetOpen}>
+              <div className="sheet-paragraphs">
+                <p>{formatCzechText(scene.description)}</p>
+              </div>
+            </div>
+          </div>
           <nav className="mobile-nav" aria-label="Animace času">
             <ol>
               {scenes.map((item, index) => (
                 <li key={item.id}>
-                  <button
+                  <button onPointerDown={event => event.stopPropagation()}
                     className={index === sceneIndex ? 'is-active' : ''}
                     onClick={() => selectScene(index)}
                     aria-current={index === sceneIndex ? 'step' : undefined}
@@ -185,11 +237,11 @@ export default function App() {
           <p>Táhni pro otočení · scroll pro přiblížení</p>
           <div className="header-control">
             <span>výchozí pohled</span>
-            <button className="camera-reset" onClick={resetCamera} aria-label="Vrátit kameru do výchozí polohy" title="Výchozí pohled">↺</button>
+            <button onPointerDown={event => event.stopPropagation()} className="camera-reset" onClick={resetCamera} aria-label="Vrátit kameru do výchozí polohy" title="Výchozí pohled"><ResetIcon /></button>
           </div>
           <div className="header-control">
             <span>{playing ? 'pauza' : 'přehrát'}</span>
-            <button className="playback-toggle" onClick={togglePlayback} aria-label={playing ? 'Pozastavit animaci' : 'Přehrát animaci'} title={playing ? 'Pozastavit animaci' : 'Přehrát animaci'}>{playing ? 'Ⅱ' : '▶'}</button>
+            <button onPointerDown={event => event.stopPropagation()} className="playback-toggle" onClick={togglePlayback} aria-label={playing ? 'Pozastavit animaci' : 'Přehrát animaci'} title={playing ? 'Pozastavit animaci' : 'Přehrát animaci'}>{playing ? 'Ⅱ' : '▶'}</button>
           </div>
         </div>
       </header>
@@ -210,7 +262,7 @@ export default function App() {
         <ol>
           {scenes.map((item, index) => (
             <li key={item.id}>
-              <button
+              <button onPointerDown={event => event.stopPropagation()}
                 className={index === sceneIndex ? 'is-active' : ''}
                 onPointerEnter={() => prefetchScene(index)}
                 onFocus={() => prefetchScene(index)}

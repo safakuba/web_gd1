@@ -89,8 +89,8 @@ function CameraRig({ scene, resetRef, transitioning, mobile, orbitBounds }: { or
     else camera.up.set(0, 1, 0)
     if (camera instanceof PerspectiveCamera) {
       camera.fov = authoredCamera?.fov ?? scene.camera.fov
-      camera.near = authoredCamera?.near ?? 0.1
-      camera.far = authoredCamera?.far ?? 100
+      camera.near = mobile ? 0.1 : Math.max(0.05, authoredCamera?.near ?? 0.1)
+      camera.far = mobile ? 100 : authoredCamera?.far ?? 100
       camera.clearViewOffset()
       camera.updateProjectionMatrix()
     }
@@ -261,7 +261,7 @@ export const WatchExperience = memo(function WatchExperience({ scene, transition
       dpr={isMobile ? [0.85, 1] : [1, 1.25]}
       frameloop={inViewport && pageVisible ? 'always' : 'never'}
       camera={{ position: scene.camera.position, fov: scene.camera.fov, near: 0.1, far: 100 }}
-      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance', stencil: false }}
+      gl={{ logarithmicDepthBuffer: false, antialias: true, alpha: false, powerPreference: 'high-performance', stencil: false }}
       shadows={false}
     >
       <TransmissionBudget mobile={isMobile} />

@@ -1,16 +1,16 @@
 export const PROJECT_ANNOTATION = {
   title: 'O projektu',
   paragraphs: [
-    'Projekt 12 fází času je osobní interaktivní vizuální studií, která zkoumá, jak subjektivně vnímám plynutí času v různých životních situacích a rozpoloženích. Na zadání dvanácti framů jsem se rozhodl reagovat prostřednictvím jednoho sjednocujícího prvku – mých vlastních digitálních hodinek Casio. Pro mne totiž nepředstavují pouhý kus kovu ke zjištění času, ale osobní archiv všeho, co každý den prožívám.',
-    'V každé z dvanácti animací pracuji s tímto objektem zcela odlišně podle toho, jak danou fázi času vnímám. Čas tu není konstantní veličinou, ale tvárným materiálem – jednou se zdá, jako by se úplně zastavil a zamrzl pod vrstvou ledu, jindy se naopak nekonečně natahuje, deformuje nebo zrychluje. Každá ze dvanácti scén je doplněna stručným autorským komentářem, (v mobilní verzi jen animacemi pro doprovod), který přibližuje, co pro mne konkrétní pocit znamená, spolu s krátkým popisem samotné vizuální metamorfózy hodinek.',
-    'Celý projekt je koncipován jako interaktivní webová prezentace, ve které si divák může jednotlivé fáze nejen prohlížet, ale 3D modely si také libovolně natáčet a přibližovat. Po technické stránce jde o propojení autorské 3D tvorby a AI nástrojů. Veškeré modelování, materiály a animace vytvářím sám v programu Blender, zatímco samotné webové prostředí v Reactu a WebGL stavím s využitím nástroje Codex. Gemini mi v celém procesu slouží jako technický kopilot při ladění příkazů, shaderů a optimalizaci kódu pro plynulý chod v prohlížeči.',
+    'Projekt 12 fází času je osobní interaktivní vizuální studií, která zkoumá, jak subjektivně vnímám plynutí času v různých životních situacích a rozpoloženích. Na zadání dvanácti framů jsem se rozhodl reagovat prostřednictvím jednoho sjednocujícího prvku – mých vlastních digitálních hodinek Casio. Pro mne totiž nepředstavují pouhý kus kovu ke zjištění času, ale osobní archiv všeho, co každý den prožívám.',
+    'V každé z dvanácti animací pracuji s tímto objektem zcela odlišně podle toho, jak danou fázi času vnímám. Čas tu není konstantní veličinou, ale tvárným materiálem – jednou se zdá, jako by se úplně zastavil a zamrzl pod vrstvou ledu, jindy se naopak nekonečně natahuje, deformuje nebo zrychluje. Každá ze dvanácti scén je doplněna stručným autorským komentářem, který přibližuje, co pro mne konkrétní pocit znamená.',
+    'Celý projekt je koncipován jako interaktivní webová prezentace, ve které si divák může jednotlivé fáze nejen prohlížet, ale 3D modely si také libovolně natáčet a přibližovat. Po technické stránce jde o propojení autorské 3D tvorby a AI nástrojů. Veškeré modelování, materiály a animace vytvářím sám v programu Blender, zatímco samotné webové prostředí v Reactu a WebGL stavím s využitím nástroje Codex. Gemini mi v celém procesu slouží jako technický kopilot při ladění příkazů, shaderů a optimalizaci kódu pro plynulý chod v prohlížeči.',
   ],
 }
 
 export const phasesContent = {
   '01': {
     id: '01', title: 'Nekonečnost',
-    description: 'Některé okamžiky subjektivně trvají déle. Mám pocit, jako by se cíl stále vzdaloval a časový úsek ke konci se neustále prodlužoval.',
+    description: 'Některé okamžiky subjektivně trvají déle. Mám pocit, jako by se čas neustále natahoval a oddaloval samotný cíl.',
     animationNote: 'Hodinky se nafukují, zvětšují, čímž symbolizují vzdalující se konec.',
   },
   '02': {

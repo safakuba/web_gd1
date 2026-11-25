@@ -17,7 +17,8 @@ button { font: inherit; }
 
   width: 100%;
   height: 100%;
-  min-height: 100svh;
+  height: 100vh;
+  height: 100dvh;
   position: relative;
   overflow: hidden;
   background:
@@ -210,7 +211,8 @@ footer { bottom: 25px; color: #626262; }
   --nav-purple: #b54cff;
   position: fixed;
   inset: 0;
-  min-height: 100svh;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: #030303;
   color: #f4f3ef;
@@ -254,9 +256,11 @@ footer { bottom: 25px; color: #626262; }
 .mobile-panel {
   position: absolute;
   inset: auto 0 0;
-  padding: 18px var(--edge) env(safe-area-inset-bottom);
-  background: linear-gradient(0deg, rgba(3,3,3,.84), transparent);
-  pointer-events: none;
+  padding: 0 var(--edge) env(safe-area-inset-bottom);
+  background: rgba(10,10,12,.74);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: white;
   z-index: 25;
   text-align: center;
 }
@@ -268,6 +272,36 @@ footer { bottom: 25px; color: #626262; }
   line-height: 1.1;
   text-transform: uppercase;
 }
+.sheet-toggle {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 0 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+.mobile-panel[data-expanded="true"] .sheet-toggle::before {
+  content: '';
+  display: block;
+  width: 34px;
+  height: 3px;
+  margin: 0 auto 9px;
+  border-radius: 2px;
+  background: #aaa;
+}
+.sheet-reveal { display: grid; grid-template-rows: 1fr; transition: grid-template-rows .25s ease; }
+.mobile-panel[data-expanded="false"] .sheet-reveal { grid-template-rows: 0fr; }
+.sheet-scroll { min-height: 0; overflow: auto; overscroll-behavior: contain; max-height: 40vh; max-height: 40dvh; }
+.sheet-paragraphs { margin: 0 auto; padding: 8px 0; max-width: 48ch; text-align: left; font: 400 15px/1.45 system-ui, sans-serif; }
+.sheet-paragraphs p { margin: 0; }
+.sheet-paragraphs p + p { margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .sheet-reveal { transition: none; } }
+.camera-reset { display: flex; align-items: center; justify-content: center; padding: 0; line-height: 0; }
+.mobile-shell button, .topbar button { position: relative; touch-action: manipulation; z-index: 30; }
 .mobile-nav ol {
   display: flex;
   max-width: 420px;
@@ -323,7 +357,7 @@ footer { bottom: 25px; color: #626262; }
 
 .gallery-band {
   display: grid;
-  grid-template-columns: max-content minmax(0, 1.5fr) minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr);
   justify-content: start;
   gap: clamp(16px, 2vw, 32px);
   align-items: end;
@@ -351,32 +385,26 @@ footer { bottom: 25px; color: #626262; }
 .gallery-band .gallery-lead {
   color: rgb(255 255 255 / 90%);
   margin: 0;
-  max-width: none;
+  width: 100%;
+  max-width: min(760px, max(580px, 52vw));
+  white-space: normal;
+  text-align: left;
   font-size: var(--sceneLead-fontSize);
   font-weight: var(--sceneLead-fontWeight);
   letter-spacing: var(--sceneLead-letterSpacing);
   line-height: var(--sceneLead-lineHeight);
-  text-wrap: pretty;
+  text-wrap: balance;
 }
-.gallery-band .gallery-caption {
-  margin: 0;
-  color: rgb(255 255 255 / 55%);
-  max-width: none;
-  font-size: var(--sceneCaption-fontSize);
-  font-weight: var(--sceneCaption-fontWeight);
-  letter-spacing: var(--sceneCaption-letterSpacing);
-  line-height: var(--sceneCaption-lineHeight);
-  text-wrap: pretty;
+@media (min-width: 801px) {
+  .gallery-band[data-phase="01"] .gallery-lead { max-width: 68ch; }
 }
-.gallery-band p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-@media (max-width: 900px) {
+@media (min-width: 801px) and (max-width: 850px) {
+  .gallery-band .gallery-lead { font-size: 14px; }
+}
+@media (max-width: 1200px) {
   .gallery-band { grid-template-columns: 1fr; gap: 12px; }
 }
 
-.gallery-band[data-phase="08"] .gallery-caption { white-space: nowrap; text-wrap: nowrap; }
-@media (min-width: 901px) {
-  .gallery-band[data-phase="08"] { grid-template-columns: max-content minmax(0, 1fr) max-content; }
-}
 .annotation-toggle, .annotation-dialog button {
   pointer-events: auto;
   color: #bbb;
